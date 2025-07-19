@@ -72,9 +72,9 @@ int main(int argc, char* argv[]) {
                 }
                 //if still frames left and no error then we can process the frame
                 std::cout << "Frame " << codec_context->frame_num
-                          << " (type=" << av_get_picture_type_char(frame->pict_type)
-                          << " bytes) pts " << frame->pts
-                          << "format" << frame->pict_type
+                          << "; type=" << av_get_picture_type_char(frame->pict_type)
+                          << "; bytes pts " << frame->pts
+                          << "; format" << frame->pict_type
                           << std::endl;
                 
             }
