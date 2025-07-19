@@ -1,0 +1,12 @@
+AVFormatContext : provides basic high level functions to interact with the stream
+
+AVCodecParameters : this is stream metadata and its static
+
+AVCodec : encoders and decoders
+
+AVCodecContext : Think of it as a container that holds everything a codec needs to know and do its job
+
+AVFrame (raw data) -> [encoder] -> AVPacket
+AVPacket -> [decoder] -> AVFrame
+
+demuxer Instances: FFmpeg creates a demuxer instance for each input file

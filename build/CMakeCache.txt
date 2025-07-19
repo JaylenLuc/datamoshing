@@ -230,6 +230,15 @@ PKG_CONFIG_ARGN:STRING=
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
+//Value Computed by CMake
+mosher_BINARY_DIR:STATIC=/home/jaylen/datamoshing/build
+
+//Value Computed by CMake
+mosher_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+mosher_SOURCE_DIR:STATIC=/home/jaylen/datamoshing
+
 //Path to a library.
 pkgcfg_lib_AVCODEC_avcodec:FILEPATH=/usr/lib/x86_64-linux-gnu/libavcodec.so
 
