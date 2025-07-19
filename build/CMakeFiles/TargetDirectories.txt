@@ -1,0 +1,3 @@
+/home/jaylen/datamoshing/build/CMakeFiles/MyFFmpegApp.dir
+/home/jaylen/datamoshing/build/CMakeFiles/edit_cache.dir
+/home/jaylen/datamoshing/build/CMakeFiles/rebuild_cache.dir
