@@ -21,11 +21,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     if (argc  == 2){
-        return 1;
-    }
-    if (std::string(argv[2]) == "-skipIMod") {
         mosh_type = "-skipIMod";
-    }else{
+    }
+    else if (std::string(argv[2]) == "-skipIMod") {
         mosh_type = "-skipIMod";
     }
     for (int i = 0; i < argc; ++i) {
