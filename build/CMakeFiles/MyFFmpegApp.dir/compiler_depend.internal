@@ -3,6 +3,7 @@
 
 CMakeFiles/MyFFmpegApp.dir/main.cpp.o
  /home/jaylen/datamoshing/main.cpp
+ /home/jaylen/datamoshing/moshUtil.h
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
  /usr/include/asm-generic/errno.h

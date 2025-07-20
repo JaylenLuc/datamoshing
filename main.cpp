@@ -6,10 +6,31 @@ extern "C" {
     #include <libavutil/imgutils.h>
     #include <libavutil/avutil.h>
     #include <libswscale/swscale.h>
+    #include "moshUtil.h"
+}
+
+void encode_and_write(AVCodecContext* enc_ctx, AVFormatContext* fmt_ctx, AVStream* stream, AVFrame* frame) {
+    if (avcodec_send_frame(enc_ctx, frame) < 0) {
+        std::cerr << "Error sending frame to encoder\n";
+        return;
+    }
+
+    AVPacket* pkt = av_packet_alloc();
+    while (avcodec_receive_packet(enc_ctx, pkt) == 0) {
+        av_packet_rescale_ts(pkt, enc_ctx->time_base, stream->time_base);
+        pkt->stream_index = stream->index;
+
+        if (av_interleaved_write_frame(fmt_ctx, pkt) < 0) {
+            std::cerr << "Error writing packet\n";
+        }
+        av_packet_unref(pkt);
+    }
+    av_packet_free(&pkt);
 }
 
 int main(int argc, char* argv[]) {
-    const char* mosh_type;
+    const short int FPS = 30; 
+    MoshType mosh_type = GLITCH;
 
     if (argc < 2) {
         std::cout << "Usage: " << argv[0] << " <video_file>" << std::endl;
@@ -17,15 +38,18 @@ int main(int argc, char* argv[]) {
     }
     if (std::string(argv[1]) == "-h") {
         std::cout << "All available options: " << std::endl;
-        std::cout << "-skipIMod" << std::endl;
+        std::cout << "-skipIMod (defualts to this if no thid argument is provided)" << std::endl;
         return 1;
     }
-    if (argc  == 2){
-        mosh_type = "-skipIMod";
+
+    //*********** Check if the second argument is provided for mosh type and set it accordingly*********/
+    if (argc  > 2){
+
+        if (std::string(argv[2]) == "-transition") {
+            mosh_type = TRANSITION;
+        }
     }
-    else if (std::string(argv[2]) == "-skipIMod") {
-        mosh_type = "-skipIMod";
-    }
+    //****************/
     for (int i = 0; i < argc; ++i) {
         std::cout << "Argument " << i << ": " << argv[i] << std::endl;
     }
@@ -59,13 +83,61 @@ int main(int argc, char* argv[]) {
         std::cout << "Could not find video stream" << std::endl;
         return 4;
     }
-    std::cout << "Finding AVMEDIA TYPE VIDEO: " << input_file << std::endl;
+    std::cout << "Found AVMEDIA TYPE VIDEO: " << input_file << std::endl;
+
+
+
     AVCodecParameters* codecpar = formatContext->streams[video_stream_idx]->codecpar;
-    // AVCodec* codec = avcodec_find_decoder(codecpar->codec_id);
+
     const AVCodec* codec = avcodec_find_decoder(codecpar->codec_id);
+    const AVCodec* out_codec = avcodec_find_encoder(codecpar->codec_id);
+    
+    AVStream* out_stream = avformat_new_stream(outFormatCtx, out_codec);
     AVCodecContext* codec_context = avcodec_alloc_context3(codec);
+    AVCodecContext* out_codec_ctx = avcodec_alloc_context3(out_codec);
+
     avcodec_parameters_to_context(codec_context, codecpar);
+
+    // Match encoder params to input
+    out_codec_ctx->height = codec_context->height;
+    out_codec_ctx->width = codec_context->width;
+    out_codec_ctx->sample_aspect_ratio = codec_context->sample_aspect_ratio;
+    if (out_codec->pix_fmts) {
+        out_codec_ctx->pix_fmt = out_codec->pix_fmts[0];
+    } else {
+        out_codec_ctx->pix_fmt = codec_context->pix_fmt;
+    }
+    out_codec_ctx->time_base = (AVRational) {1, FPS};
+    out_stream->time_base = out_codec_ctx->time_base;
+    out_codec_ctx->max_b_frames = 0;
+    out_codec_ctx->has_b_frames = 0;
+
+
+    AVDictionary* opts = nullptr;
+    av_dict_set(&opts, "sc_threshold", "0", 0);    // Prevent auto keyframe detection
+    av_dict_set(&opts, "g", "999", 0);            // Very high GOP size (delays I-frames)
+    av_dict_set(&opts, "bf", "0", 0);              // No B-frames
+    av_dict_set(&opts, "crf", "30", 0);   // Lower quality, more visible moshing
+    av_dict_set(&opts, "preset", "ultrafast", 0);
+
+    //its time to opne the codec encoder context
+    if (avcodec_open2(out_codec_ctx, out_codec, &opts) < 0) {
+        std::cerr << "Could not open output codec" << std::endl;
+        return 6;
+    }
+    avcodec_parameters_from_context(out_stream->codecpar, out_codec_ctx);
+    av_dict_free(&opts);
+    // Write header
+    if (!(outFormatCtx->oformat->flags & AVFMT_NOFILE)) {
+        avio_open(&outFormatCtx->pb, "data_moshed.mp4", AVIO_FLAG_WRITE);
+    }
+    int alloc_stream_res = avformat_write_header(outFormatCtx, nullptr);
+    if (alloc_stream_res < 0) {
+        std::cerr << "Could not write header to output file" << std::endl;
+        return 1;
+    }
     std::cout << "Filling codec context from codec parameters"  << std::endl;
+    //open decoder context
     if (avcodec_open2(codec_context, codec, nullptr) < 0) {
         std::cout << "Could not open codec" << std::endl;
         return 5;
@@ -74,9 +146,17 @@ int main(int argc, char* argv[]) {
     AVFrame* frame = av_frame_alloc();
     //frame gets encoeded into a packet 
     AVPacket* packet = av_packet_alloc();
+
+    AVFrame* last_p_frame = nullptr;
+    std::vector<AVFrame*> p_history;
+    int64_t pts_counter = 0;
+
     unsigned int frame_count = 0;
+    const short transition_frame = 100;
+    // std::cout << AV_PICTURE_TYPE_I << std::endl;
+    std::cout << "*******************arbitration of frames*************************/" << std::endl;
     while (av_read_frame(formatContext, packet) == 0) {
-        std::cout << " reading frame" << std::endl;
+        //std::cout << " reading frame " << frame_count << std::endl;
         frame_count++;
         if (packet->stream_index == video_stream_idx) {
             //decoding
@@ -95,26 +175,88 @@ int main(int argc, char* argv[]) {
                 }
                 //if still frames left and no error then we can process the frame
                 char frame_data_type = av_get_picture_type_char(frame->pict_type);
-                std::cout << "*************************" << std::endl;
-                std::cout << "Frame " << codec_context->frame_num
-                          << "; type=" << frame_data_type
-                          << "; bytes pts " << frame->pts
-                          << "; format" << frame->pict_type
-                          << std::endl;
-                std::cout << "*************************" << std::endl;
-                if (frame_data_type == AV_PICTURE_TYPE_I) {
+                // std::cout << "*************************" << std::endl;
+                // std::cout << "Frame " << codec_context->frame_num
+                //           << "; type=" << frame_data_type
+                //           << "; bytes pts " << frame->pts
+                //           << "; format" << frame->pict_type
+                //           << std::endl;
+                // std::cout << frame_data_type << std::endl;
+                switch (mosh_type) {
+                    case GLITCH:
+                        if (frame_data_type == 'I') {
+                            // if (frame_count % 4 == 0){
+                            std::cout << "Skipping I-frame" << std::endl;
+                            if (last_p_frame != nullptr) {
+                                AVFrame* clone = av_frame_clone(last_p_frame);
+                                clone->pts = pts_counter++;
 
-                    continue;
+                                for (int i = 0; i < 60; i++) {
+                                    AVFrame* chosen = av_frame_clone(p_history[i % p_history.size()]);
+                                    chosen->pts = pts_counter++;
+                                    encode_and_write(out_codec_ctx, outFormatCtx, out_stream, chosen);
+                                    av_frame_free(&chosen);
+                                }
+                                //encode_and_write(out_codec_ctx, outFormatCtx, out_stream, clone);
+
+                                av_frame_free(&clone);
+                                
+                            }
+                            av_frame_unref(frame);
+                            continue; // Skip I-frames
+                        
+                        } else if (frame_data_type == 'P') {
+                            if (p_history.size() > 50) {
+                                av_frame_free(&p_history[0]);
+                                p_history.erase(p_history.begin());
+                            }
+                            p_history.push_back(av_frame_clone(frame));
+
+                            // Process P-frames
+                            if (last_p_frame != nullptr) {
+                                av_frame_free(&last_p_frame);
+                            }
+                            last_p_frame = av_frame_clone(frame);
+                        }else if  (frame->pict_type == AV_PICTURE_TYPE_NONE) {
+                            std::cout << "Frame " << codec_context->frame_num << " has no pict_type yet (AV_PICTURE_TYPE_NONE)" << std::endl;
+                        }
+                        else if (frame_data_type == 'B') {
+                            std::cout << "B-frame detected, skipping" << std::endl;
+                            av_frame_unref(frame);
+                            continue; // Skip B-frames
+                        } else {
+                            std::cout << "Unknown frame type: " << frame_data_type << std::endl;
+                            
+                        }
+                        break;
+                    case TRANSITION:
+                        break;
                 }
-                else if (frame_data_type == AV_PICTURE_TYPE_P) {
-                    // Process P-frames
-                } 
-                
+                frame->pts = pts_counter++;
+                encode_and_write( out_codec_ctx, outFormatCtx, out_stream, frame);
             }
         }
 
         av_packet_unref(packet);
     }
+    std::cout << "*******************ENDOF arbitration of frames*************************/" << std::endl;
+    //flushing
+    if (last_p_frame != nullptr) {
+        av_frame_free(&last_p_frame);
+    }
+    AVPacket* flush_pkt = av_packet_alloc();
+    avcodec_send_frame(out_codec_ctx, nullptr);
+    while (avcodec_receive_packet(out_codec_ctx, flush_pkt) == 0) {
+        av_packet_rescale_ts(flush_pkt, out_codec_ctx->time_base, out_stream->time_base);
+        flush_pkt->stream_index = out_stream->index;
+        av_interleaved_write_frame(outFormatCtx, flush_pkt);
+        av_packet_unref(flush_pkt);
+    }
+    av_packet_free(&flush_pkt);
+
+    av_write_trailer(outFormatCtx);
+    avio_closep(&outFormatCtx->pb);
+    avformat_free_context(outFormatCtx);
     std::cout << "Finished reading frames" << std::endl;
     av_frame_free(&frame);
     avcodec_free_context(&codec_context);
