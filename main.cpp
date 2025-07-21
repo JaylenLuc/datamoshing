@@ -32,7 +32,7 @@ void encode_and_write(AVCodecContext* enc_ctx, AVFormatContext* fmt_ctx, AVStrea
 int main(int argc, char* argv[]) {
     const short int FPS = 30; 
     const short transition_frame = 100;
-    MoshType mosh_type = GLITCH;
+    MoshType mosh_type = IFRAMERM;
 
     if (argc < 2) {
         std::cout << "Usage: " << argv[0] << " <video_file>" << std::endl;
@@ -40,15 +40,15 @@ int main(int argc, char* argv[]) {
     }
     if (std::string(argv[1]) == "-h") {
         std::cout << "All available options: " << std::endl;
-        std::cout << "-glitch (defaults to this if no third argument is provided)" << std::endl;
-        std::cout << "-transition (creates transition effect by replacing I-frames with P-frames)" << std::endl;
+        std::cout << "-i (i frame removal)(defaults to this if no third argument is provided)" << std::endl;
+        std::cout << "-p (p frame duplication)" << std::endl;
         return 1;
     }
 
     //*********** Check if the second argument is provided for mosh type and set it accordingly*********/
     if (argc > 2) {
-        if (std::string(argv[2]) == "-transition") {
-            mosh_type = TRANSITION;
+        if (std::string(argv[2]) == "-p") {
+            mosh_type = PFRAMEDUP;
         }
     }
     //****************/
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 
     AVDictionary* opts = nullptr;
     av_dict_set(&opts, "sc_threshold", "0", 0);    // Prevent auto keyframe detection
-    av_dict_set(&opts, "g", "999", 0);            // Very high GOP size (delays I-frames)
+    av_dict_set(&opts, "g", "9999", 0);            // Very high GOP size (delays I-frames)
     av_dict_set(&opts, "bf", "0", 0);              // No B-frames
     av_dict_set(&opts, "crf", "30", 0);   // Lower quality, more visible moshing
     av_dict_set(&opts, "preset", "ultrafast", 0);
@@ -174,49 +174,47 @@ int main(int argc, char* argv[]) {
                 char frame_data_type = av_get_picture_type_char(frame->pict_type);
 
                 switch (mosh_type) {
-                    case GLITCH:
+                    case IFRAMERM:
                         if (frame_data_type == 'I') {
-                            std::cout << "Skipping I-frame" << std::endl;
-                            if (last_p_frame != nullptr) {
-                                AVFrame* clone = av_frame_clone(last_p_frame);
-                                clone->pts = pts_counter++;
-                                if (p_history.empty()) continue;
-                                for (int i = 0; i < 60; i++) {
-                                    AVFrame* chosen = av_frame_clone(p_history[i % p_history.size()]);
-                                    chosen->pts = pts_counter++;
-                                    encode_and_write(out_codec_ctx, outFormatCtx, out_stream, chosen);
-                                    av_frame_free(&chosen);
-                                }
-                                av_frame_free(&clone);
-                            }
+                            // std::cout << "Skipping I-frame, reusing last P-frame\n";
+                            // if (last_p_frame != nullptr) {
+                            //     for (int i = 0; i < 10; i++) {
+                            //         AVFrame* reuse = av_frame_clone(last_p_frame);
+                            //         reuse->pts = pts_counter++;
+                            //         reuse->pict_type = AV_PICTURE_TYPE_P;
+                            //         reuse->flags &= ~AV_FRAME_FLAG_KEY;
+                            //         encode_and_write(out_codec_ctx, outFormatCtx, out_stream, reuse);
+                            //         av_frame_free(&reuse);
+                            //     }
+                            // }
                             av_frame_unref(frame);
-                            continue; 
-                        
+                            continue;
                         } else if (frame_data_type == 'P') {
-                            if (p_history.size() > 50) {
-                                av_frame_free(&p_history[0]);
-                                p_history.erase(p_history.begin());
-                            }
-                            p_history.push_back(av_frame_clone(frame));
-
+                            // Store this P-frame for later reference
                             if (last_p_frame != nullptr) {
                                 av_frame_free(&last_p_frame);
                             }
                             last_p_frame = av_frame_clone(frame);
-                        } else if (frame->pict_type == AV_PICTURE_TYPE_NONE) {
-                            std::cout << "Frame " << codec_context->frame_num << " has no pict_type yet (AV_PICTURE_TYPE_NONE)" << std::endl;
-                            continue;
+
+                            // Force it to not be a keyframe
+                            frame->pict_type = AV_PICTURE_TYPE_P;
+                            frame->flags &= ~AV_FRAME_FLAG_KEY;
+                            frame->pts = pts_counter++;
+                            encode_and_write(out_codec_ctx, outFormatCtx, out_stream, frame);
                         } else if (frame_data_type == 'B') {
-                            std::cout << "B-frame detected, skipping" << std::endl;
+                            std::cout << "Skipping B-frame" << std::endl;
                             av_frame_unref(frame);
-                            continue; // Skip B-frames
-                        } else {
-                            std::cout << "Unknown frame type: " << frame_data_type << std::endl;
                             continue;
+                        } else {
+                            // Just in case: treat unknown as P-frame
+                            frame->pict_type = AV_PICTURE_TYPE_P;
+                            frame->flags &= ~AV_FRAME_FLAG_KEY;
+                            frame->pts = pts_counter++;
+                            encode_and_write(out_codec_ctx, outFormatCtx, out_stream, frame);
                         }
                         break;
                         
-                    case TRANSITION: {
+                    case PFRAMEDUP: {
                         // Skip B-frames entirely
                         if (frame_data_type == 'B') {
                             std::cout << "B-frame detected, skipping" << std::endl;
@@ -239,7 +237,7 @@ int main(int argc, char* argv[]) {
                                 // Create multiple corrupted frames for dramatic effect
                                 if (last_p_frame != nullptr) {
                                     // Generate several frames with increasing corruption
-                                    for (int repeat = 0; repeat < 55; repeat++) {
+                                    for (int repeat = 0; repeat < 15; repeat++) {
                                         AVFrame* corrupted = av_frame_clone(last_p_frame);
                                         corrupted->pts = pts_counter++;
                                         corrupted->pict_type = AV_PICTURE_TYPE_P;
@@ -275,7 +273,7 @@ int main(int argc, char* argv[]) {
                                         av_frame_free(&corrupted);
                                     }
                                     
-                                    std::cout << "Generated " << 55 << " corrupted frames for transition\n";
+                                    std::cout << "Generated " << 15 << " corrupted frames for transition\n";
                                 } else {
                                     std::cout << "No P-frame available for transition effect\n";
                                 }
