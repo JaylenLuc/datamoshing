@@ -74,6 +74,7 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
   /usr/include/c++/13/cstddef \
   /usr/include/c++/13/cstdio \
   /usr/include/c++/13/cstdlib \
+  /usr/include/c++/13/cstring \
   /usr/include/c++/13/cwchar \
   /usr/include/c++/13/cwctype \
   /usr/include/c++/13/debug/assertions.h \
@@ -295,7 +296,7 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/x86_64-linux-gnu/libavutil/rational.h:
 
-/usr/include/pthread.h:
+/usr/include/x86_64-linux-gnu/libavutil/pixfmt.h:
 
 /usr/include/linux/limits.h:
 
@@ -337,14 +338,6 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/tr1/ell_integral.tcc:
 
-/usr/include/c++/13/tr1/beta_function.tcc:
-
-/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
-
-/usr/include/c++/13/bits/utility.h:
-
-/usr/include/c++/13/bits/stl_function.h:
-
 /usr/include/c++/13/typeinfo:
 
 /usr/include/c++/13/system_error:
@@ -378,6 +371,16 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 /usr/include/c++/13/bits/functional_hash.h:
 
 /usr/include/c++/13/debug/assertions.h:
+
+/usr/include/c++/13/tr1/beta_function.tcc:
+
+/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
+
+/usr/include/c++/13/bits/utility.h:
+
+/usr/include/c++/13/bits/stl_function.h:
+
+/usr/include/c++/13/cstring:
 
 /usr/include/c++/13/cstdlib:
 
@@ -607,6 +610,8 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/bits/stl_uninitialized.h:
 
+/usr/include/pthread.h:
+
 /usr/include/wctype.h:
 
 /usr/include/sched.h:
@@ -816,5 +821,3 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 /usr/include/c++/13/backward/binders.h:
 
 /usr/include/x86_64-linux-gnu/libavutil/mathematics.h:
-
-/usr/include/x86_64-linux-gnu/libavutil/pixfmt.h:

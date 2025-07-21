@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cstring>  // for memcpy
 extern "C" {
     #include <libavcodec/avcodec.h>
     #include <libavformat/avformat.h>
@@ -30,6 +31,7 @@ void encode_and_write(AVCodecContext* enc_ctx, AVFormatContext* fmt_ctx, AVStrea
 
 int main(int argc, char* argv[]) {
     const short int FPS = 30; 
+    const short transition_frame = 100;
     MoshType mosh_type = GLITCH;
 
     if (argc < 2) {
@@ -38,13 +40,13 @@ int main(int argc, char* argv[]) {
     }
     if (std::string(argv[1]) == "-h") {
         std::cout << "All available options: " << std::endl;
-        std::cout << "-skipIMod (defualts to this if no thid argument is provided)" << std::endl;
+        std::cout << "-glitch (defaults to this if no third argument is provided)" << std::endl;
+        std::cout << "-transition (creates transition effect by replacing I-frames with P-frames)" << std::endl;
         return 1;
     }
 
     //*********** Check if the second argument is provided for mosh type and set it accordingly*********/
-    if (argc  > 2){
-
+    if (argc > 2) {
         if (std::string(argv[2]) == "-transition") {
             mosh_type = TRANSITION;
         }
@@ -85,8 +87,6 @@ int main(int argc, char* argv[]) {
     }
     std::cout << "Found AVMEDIA TYPE VIDEO: " << input_file << std::endl;
 
-
-
     AVCodecParameters* codecpar = formatContext->streams[video_stream_idx]->codecpar;
 
     const AVCodec* codec = avcodec_find_decoder(codecpar->codec_id);
@@ -112,7 +112,6 @@ int main(int argc, char* argv[]) {
     out_codec_ctx->max_b_frames = 0;
     out_codec_ctx->has_b_frames = 0;
 
-
     AVDictionary* opts = nullptr;
     av_dict_set(&opts, "sc_threshold", "0", 0);    // Prevent auto keyframe detection
     av_dict_set(&opts, "g", "999", 0);            // Very high GOP size (delays I-frames)
@@ -120,7 +119,7 @@ int main(int argc, char* argv[]) {
     av_dict_set(&opts, "crf", "30", 0);   // Lower quality, more visible moshing
     av_dict_set(&opts, "preset", "ultrafast", 0);
 
-    //its time to opne the codec encoder context
+    //its time to open the codec encoder context
     if (avcodec_open2(out_codec_ctx, out_codec, &opts) < 0) {
         std::cerr << "Could not open output codec" << std::endl;
         return 6;
@@ -144,19 +143,17 @@ int main(int argc, char* argv[]) {
     }
     std::cout << "opening codec"  << std::endl;
     AVFrame* frame = av_frame_alloc();
-    //frame gets encoeded into a packet 
+    //frame gets encoded into a packet 
     AVPacket* packet = av_packet_alloc();
 
     AVFrame* last_p_frame = nullptr;
     std::vector<AVFrame*> p_history;
     int64_t pts_counter = 0;
+    bool skip_next_i_frame = false;
 
     unsigned int frame_count = 0;
-    const short transition_frame = 100;
-    // std::cout << AV_PICTURE_TYPE_I << std::endl;
     std::cout << "*******************arbitration of frames*************************/" << std::endl;
     while (av_read_frame(formatContext, packet) == 0) {
-        //std::cout << " reading frame " << frame_count << std::endl;
         frame_count++;
         if (packet->stream_index == video_stream_idx) {
             //decoding
@@ -175,35 +172,25 @@ int main(int argc, char* argv[]) {
                 }
                 //if still frames left and no error then we can process the frame
                 char frame_data_type = av_get_picture_type_char(frame->pict_type);
-                // std::cout << "*************************" << std::endl;
-                // std::cout << "Frame " << codec_context->frame_num
-                //           << "; type=" << frame_data_type
-                //           << "; bytes pts " << frame->pts
-                //           << "; format" << frame->pict_type
-                //           << std::endl;
-                // std::cout << frame_data_type << std::endl;
+
                 switch (mosh_type) {
                     case GLITCH:
                         if (frame_data_type == 'I') {
-                            // if (frame_count % 4 == 0){
                             std::cout << "Skipping I-frame" << std::endl;
                             if (last_p_frame != nullptr) {
                                 AVFrame* clone = av_frame_clone(last_p_frame);
                                 clone->pts = pts_counter++;
-
+                                if (p_history.empty()) continue;
                                 for (int i = 0; i < 60; i++) {
                                     AVFrame* chosen = av_frame_clone(p_history[i % p_history.size()]);
                                     chosen->pts = pts_counter++;
                                     encode_and_write(out_codec_ctx, outFormatCtx, out_stream, chosen);
                                     av_frame_free(&chosen);
                                 }
-                                //encode_and_write(out_codec_ctx, outFormatCtx, out_stream, clone);
-
                                 av_frame_free(&clone);
-                                
                             }
                             av_frame_unref(frame);
-                            continue; // Skip I-frames
+                            continue; 
                         
                         } else if (frame_data_type == 'P') {
                             if (p_history.size() > 50) {
@@ -212,38 +199,138 @@ int main(int argc, char* argv[]) {
                             }
                             p_history.push_back(av_frame_clone(frame));
 
-                            // Process P-frames
                             if (last_p_frame != nullptr) {
                                 av_frame_free(&last_p_frame);
                             }
                             last_p_frame = av_frame_clone(frame);
-                        }else if  (frame->pict_type == AV_PICTURE_TYPE_NONE) {
+                        } else if (frame->pict_type == AV_PICTURE_TYPE_NONE) {
                             std::cout << "Frame " << codec_context->frame_num << " has no pict_type yet (AV_PICTURE_TYPE_NONE)" << std::endl;
-                        }
-                        else if (frame_data_type == 'B') {
+                            continue;
+                        } else if (frame_data_type == 'B') {
                             std::cout << "B-frame detected, skipping" << std::endl;
                             av_frame_unref(frame);
                             continue; // Skip B-frames
                         } else {
                             std::cout << "Unknown frame type: " << frame_data_type << std::endl;
-                            
+                            continue;
                         }
                         break;
-                    case TRANSITION:
+                        
+                    case TRANSITION: {
+                        // Skip B-frames entirely
+                        if (frame_data_type == 'B') {
+                            std::cout << "B-frame detected, skipping" << std::endl;
+                            av_frame_unref(frame);
+                            continue;
+                        }
+
+                        // Check if we're at a transition point
+                        const bool is_at_transition = (frame_count != 0 && frame_count % transition_frame == 0);
+                        if (is_at_transition) {
+                            std::cout << "TRANSITION TRIGGERED at frame " << frame_count << "\n";
+                            skip_next_i_frame = true;
+                        }
+
+                        // Handle I-frames
+                        if (frame_data_type == 'I') {
+                            if (skip_next_i_frame) {
+                                std::cout << "Creating transition datamosh effect - skipping I-frame\n";
+                                
+                                // Create multiple corrupted frames for dramatic effect
+                                if (last_p_frame != nullptr) {
+                                    // Generate several frames with increasing corruption
+                                    for (int repeat = 0; repeat < 55; repeat++) {
+                                        AVFrame* corrupted = av_frame_clone(last_p_frame);
+                                        corrupted->pts = pts_counter++;
+                                        corrupted->pict_type = AV_PICTURE_TYPE_P;
+                                        corrupted->flags &= ~AV_FRAME_FLAG_KEY;
+                                        
+                                        // Add some basic corruption by modifying pixel data
+                                        if (corrupted->data[0] != nullptr && corrupted->linesize[0] > 0) {
+                                            int height = corrupted->height;
+                                            int width = corrupted->linesize[0];
+                                            
+                                            // Create horizontal streaking effect
+                                            for (int y = repeat * 10; y < height && y < (repeat + 1) * 10; y++) {
+                                                if (y > 0 && y < height - 1) {
+                                                    uint8_t* line = corrupted->data[0] + y * width;
+                                                    uint8_t* prev_line = corrupted->data[0] + (y-1) * width;
+                                                    // Copy previous line to create streaking
+                                                    memcpy(line, prev_line, width);
+                                                }
+                                            }
+                                            
+                                            // Add some vertical displacement
+                                            if (repeat > 5) {
+                                                int shift_amount = (repeat - 5) * 2;
+                                                for (int y = shift_amount; y < height - shift_amount; y++) {
+                                                    uint8_t* dest_line = corrupted->data[0] + y * width;
+                                                    uint8_t* src_line = corrupted->data[0] + (y - shift_amount) * width;
+                                                    memcpy(dest_line, src_line, width);
+                                                }
+                                            }
+                                        }
+                                        
+                                        encode_and_write(out_codec_ctx, outFormatCtx, out_stream, corrupted);
+                                        av_frame_free(&corrupted);
+                                    }
+                                    
+                                    std::cout << "Generated " << 55 << " corrupted frames for transition\n";
+                                } else {
+                                    std::cout << "No P-frame available for transition effect\n";
+                                }
+                                
+                                skip_next_i_frame = false;
+                                av_frame_unref(frame);
+                                continue;
+                            } else {
+                                // Normal I-frame processing - just encode it
+                                frame->pts = pts_counter++;
+                                encode_and_write(out_codec_ctx, outFormatCtx, out_stream, frame);
+                            }
+                        }
+                        // Handle P-frames
+                        else if (frame_data_type == 'P') {
+                            // Store this P-frame for potential future use
+                            if (last_p_frame) {
+                                av_frame_free(&last_p_frame);
+                            }
+                            last_p_frame = av_frame_clone(frame);
+                            
+                            // Encode the P-frame normally
+                            frame->pts = pts_counter++;
+                            encode_and_write(out_codec_ctx, outFormatCtx, out_stream, frame);
+                        }
+                        // Handle other frame types
+                        else {
+                            if (frame->pict_type == AV_PICTURE_TYPE_NONE) {
+                                std::cout << "Frame " << codec_context->frame_num << " has no pict_type yet (AV_PICTURE_TYPE_NONE)" << std::endl;
+                                av_frame_unref(frame);
+                                continue;
+                            }
+                            // For any other frame type, just encode it normally
+                            frame->pts = pts_counter++;
+                            encode_and_write(out_codec_ctx, outFormatCtx, out_stream, frame);
+                        }
                         break;
+                    }
                 }
-                frame->pts = pts_counter++;
-                encode_and_write( out_codec_ctx, outFormatCtx, out_stream, frame);
             }
         }
-
         av_packet_unref(packet);
     }
-    std::cout << "*******************ENDOF arbitration of frames*************************/" << std::endl;
-    //flushing
+    std::cout << "*******************END OF arbitration of frames*************************/" << std::endl;
+    
+    //flushing and cleanup
+    for (AVFrame* p_frame : p_history) {
+        av_frame_free(&p_frame);
+    }
+    p_history.clear();
+    
     if (last_p_frame != nullptr) {
         av_frame_free(&last_p_frame);
     }
+    
     AVPacket* flush_pkt = av_packet_alloc();
     avcodec_send_frame(out_codec_ctx, nullptr);
     while (avcodec_receive_packet(out_codec_ctx, flush_pkt) == 0) {
@@ -257,9 +344,12 @@ int main(int argc, char* argv[]) {
     av_write_trailer(outFormatCtx);
     avio_closep(&outFormatCtx->pb);
     avformat_free_context(outFormatCtx);
+    
     std::cout << "Finished reading frames" << std::endl;
     av_frame_free(&frame);
+    av_packet_free(&packet);
     avcodec_free_context(&codec_context);
+    avcodec_free_context(&out_codec_ctx);
     avformat_close_input(&formatContext);
     return 0;
 }
