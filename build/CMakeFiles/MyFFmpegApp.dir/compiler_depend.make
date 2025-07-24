@@ -16,6 +16,7 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
   /usr/include/c++/13/bits/basic_string.tcc \
   /usr/include/c++/13/bits/char_traits.h \
   /usr/include/c++/13/bits/charconv.h \
+  /usr/include/c++/13/bits/codecvt.h \
   /usr/include/c++/13/bits/concept_check.h \
   /usr/include/c++/13/bits/cpp_type_traits.h \
   /usr/include/c++/13/bits/cxxabi_forced.h \
@@ -23,6 +24,7 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
   /usr/include/c++/13/bits/exception.h \
   /usr/include/c++/13/bits/exception_defines.h \
   /usr/include/c++/13/bits/exception_ptr.h \
+  /usr/include/c++/13/bits/fstream.tcc \
   /usr/include/c++/13/bits/functexcept.h \
   /usr/include/c++/13/bits/functional_hash.h \
   /usr/include/c++/13/bits/hash_bytes.h \
@@ -48,6 +50,7 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
   /usr/include/c++/13/bits/refwrap.h \
   /usr/include/c++/13/bits/requires_hosted.h \
   /usr/include/c++/13/bits/specfun.h \
+  /usr/include/c++/13/bits/sstream.tcc \
   /usr/include/c++/13/bits/std_abs.h \
   /usr/include/c++/13/bits/stl_algobase.h \
   /usr/include/c++/13/bits/stl_bvector.h \
@@ -85,6 +88,7 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
   /usr/include/c++/13/ext/numeric_traits.h \
   /usr/include/c++/13/ext/string_conversions.h \
   /usr/include/c++/13/ext/type_traits.h \
+  /usr/include/c++/13/fstream \
   /usr/include/c++/13/initializer_list \
   /usr/include/c++/13/ios \
   /usr/include/c++/13/iosfwd \
@@ -95,6 +99,7 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
   /usr/include/c++/13/new \
   /usr/include/c++/13/ostream \
   /usr/include/c++/13/pstl/pstl_config.h \
+  /usr/include/c++/13/sstream \
   /usr/include/c++/13/stdexcept \
   /usr/include/c++/13/stdlib.h \
   /usr/include/c++/13/streambuf \
@@ -216,8 +221,10 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h \
   /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
@@ -298,15 +305,11 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/x86_64-linux-gnu/libavutil/pixfmt.h:
 
-/usr/include/linux/limits.h:
+/usr/include/x86_64-linux-gnu/libavutil/macros.h:
 
-/usr/include/x86_64-linux-gnu/bits/posix2_lim.h:
+/usr/include/x86_64-linux-gnu/libavutil/intfloat.h:
 
-/usr/include/x86_64-linux-gnu/libavformat/version.h:
-
-/usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h:
-
-/usr/include/c++/13/tr1/exp_integral.tcc:
+/usr/include/x86_64-linux-gnu/libavutil/imgutils.h:
 
 /usr/include/inttypes.h:
 
@@ -316,15 +319,13 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/x86_64-linux-gnu/libavutil/attributes.h:
 
-/usr/include/stdint.h:
-
-/usr/include/endian.h:
-
 /usr/include/c++/13/tr1/riemann_zeta.tcc:
 
 /usr/include/c++/13/ostream:
 
-/usr/include/locale.h:
+/usr/include/x86_64-linux-gnu/libavutil/pixdesc.h:
+
+/usr/include/c++/13/tr1/poly_hermite.tcc:
 
 /usr/include/x86_64-linux-gnu/libavcodec/defs.h:
 
@@ -338,7 +339,11 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/tr1/ell_integral.tcc:
 
-/usr/include/c++/13/typeinfo:
+/usr/include/c++/13/tr1/exp_integral.tcc:
+
+/usr/include/x86_64-linux-gnu/libavutil/mem.h:
+
+/usr/include/c++/13/bits/cxxabi_init_exception.h:
 
 /usr/include/c++/13/system_error:
 
@@ -374,17 +379,13 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/tr1/beta_function.tcc:
 
-/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
-
-/usr/include/c++/13/bits/utility.h:
-
 /usr/include/c++/13/bits/stl_function.h:
 
 /usr/include/c++/13/cstring:
 
-/usr/include/c++/13/cstdlib:
-
 /usr/include/c++/13/cstdio:
+
+/usr/include/c++/13/fstream:
 
 /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
 
@@ -428,17 +429,13 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/bits/uses_allocator.h:
 
-/usr/include/x86_64-linux-gnu/libavformat/avformat.h:
-
-/usr/include/c++/13/bits/postypes.h:
-
 /usr/include/c++/13/bits/std_abs.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
 
-/usr/include/ctype.h:
+/usr/include/c++/13/bits/new_allocator.h:
 
-/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+/usr/include/c++/13/bits/stl_uninitialized.h:
 
 /usr/include/c++/13/bits/functexcept.h:
 
@@ -452,8 +449,6 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/bits/istream.tcc:
 
-/usr/include/c++/13/bits/stl_vector.h:
-
 /usr/include/c++/13/bits/cxxabi_forced.h:
 
 /usr/include/c++/13/bits/cpp_type_traits.h:
@@ -466,15 +461,27 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/bits/locale_facets.h:
 
+/usr/include/c++/13/bits/postypes.h:
+
+/usr/include/x86_64-linux-gnu/libavformat/avformat.h:
+
 /usr/include/c++/13/bits/localefwd.h:
 
 /usr/include/c++/13/bits/streambuf_iterator.h:
 
 /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h:
+/usr/include/c++/13/bits/ptr_traits.h:
 
-/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
+/usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:
+
+/usr/include/c++/13/bits/basic_string.tcc:
+
+/usr/include/c++/13/bit:
+
+/usr/include/alloca.h:
 
 /usr/include/c++/13/bits/hash_bytes.h:
 
@@ -490,13 +497,23 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/cwchar:
 
+/usr/include/x86_64-linux-gnu/libavutil/log.h:
+
+/usr/include/asm-generic/errno-base.h:
+
+/usr/include/c++/13/bits/stl_iterator_base_funcs.h:
+
 /usr/include/c++/13/iosfwd:
 
 /usr/include/c++/13/bits/predefined_ops.h:
 
-/usr/include/x86_64-linux-gnu/libavutil/macros.h:
+/usr/include/c++/13/bits/sstream.tcc:
 
 /usr/include/c++/13/bits/stringfwd.h:
+
+/usr/include/x86_64-linux-gnu/libavutil/mathematics.h:
+
+/usr/include/c++/13/backward/binders.h:
 
 /usr/include/features.h:
 
@@ -520,10 +537,6 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/tr1/hypergeometric.tcc:
 
-/usr/include/c++/13/bit:
-
-/usr/include/c++/13/bits/basic_string.tcc:
-
 /usr/include/c++/13/bits/move.h:
 
 /usr/include/c++/13/bits/ios_base.h:
@@ -531,6 +544,10 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h:
 
 /usr/include/c++/13/bits/ostream.tcc:
+
+/usr/include/c++/13/bits/stl_vector.h:
+
+/usr/include/c++/13/bits/codecvt.h:
 
 /usr/include/c++/13/bits/basic_ios.h:
 
@@ -544,13 +561,13 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/gthr.h:
 
-/usr/include/alloca.h:
+/usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h:
 
-/usr/include/c++/13/bits/ptr_traits.h:
+/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h:
+/usr/include/ctype.h:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 
 /usr/include/c++/13/tr1/special_function_util.h:
 
@@ -588,9 +605,7 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/c++/13/stdexcept:
 
-/usr/include/linux/errno.h:
-
-/usr/include/c++/13/debug/debug.h:
+/usr/include/c++/13/bits/fstream.tcc:
 
 /usr/include/x86_64-linux-gnu/libavcodec/codec_id.h:
 
@@ -598,17 +613,33 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
 
-/usr/include/c++/13/bits/cxxabi_init_exception.h:
-
-/usr/include/x86_64-linux-gnu/libavutil/mem.h:
+/usr/include/c++/13/cstdlib:
 
 /usr/include/c++/13/bits/stl_algobase.h:
 
 /usr/include/c++/13/bits/stl_construct.h:
 
-/usr/include/c++/13/bits/new_allocator.h:
+/usr/include/c++/13/debug/debug.h:
 
-/usr/include/c++/13/bits/stl_uninitialized.h:
+/usr/include/linux/errno.h:
+
+/usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h:
+
+/usr/include/linux/limits.h:
+
+/usr/include/endian.h:
+
+/usr/include/stdint.h:
+
+/usr/include/x86_64-linux-gnu/bits/posix2_lim.h:
+
+/usr/include/x86_64-linux-gnu/libavformat/version.h:
+
+/usr/include/locale.h:
+
+/usr/include/c++/13/bits/utility.h:
+
+/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
 
 /usr/include/pthread.h:
 
@@ -619,6 +650,8 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 /usr/include/stdlib.h:
 
 /usr/include/x86_64-linux-gnu/libavutil/hwcontext.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h:
 
 /usr/include/x86_64-linux-gnu/libavcodec/codec_desc.h:
 
@@ -676,6 +709,8 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/local_lim.h:
 
+/usr/include/c++/13/sstream:
+
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/wchar.h:
@@ -694,8 +729,6 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
 
-/usr/include/x86_64-linux-gnu/libavutil/imgutils.h:
-
 /usr/include/x86_64-linux-gnu/bits/sched.h:
 
 /usr/include/time.h:
@@ -705,10 +738,6 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
 
 /usr/include/x86_64-linux-gnu/libavutil/buffer.h:
-
-/usr/include/c++/13/tr1/poly_hermite.tcc:
-
-/usr/include/x86_64-linux-gnu/libavutil/pixdesc.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/FILE.h:
 
@@ -721,12 +750,6 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 /usr/include/c++/13/bits/locale_classes.h:
 
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
-
-/usr/include/asm-generic/errno-base.h:
-
-/usr/include/c++/13/bits/stl_iterator_base_funcs.h:
-
-/usr/include/x86_64-linux-gnu/libavutil/log.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdio_lim.h:
 
@@ -786,6 +809,10 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h:
 
+/usr/include/c++/13/typeinfo:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h:
+
 /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h:
 
 /usr/include/c++/13/bits/char_traits.h:
@@ -815,9 +842,3 @@ CMakeFiles/MyFFmpegApp.dir/main.cpp.o: /home/jaylen/datamoshing/main.cpp \
 /usr/include/x86_64-linux-gnu/libavutil/error.h:
 
 /usr/include/x86_64-linux-gnu/libavutil/frame.h:
-
-/usr/include/x86_64-linux-gnu/libavutil/intfloat.h:
-
-/usr/include/c++/13/backward/binders.h:
-
-/usr/include/x86_64-linux-gnu/libavutil/mathematics.h:
