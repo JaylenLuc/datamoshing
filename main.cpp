@@ -167,7 +167,8 @@ int main(int argc, char* argv[]) {
 
     //remux using temrinal 
     std::stringstream cmd;
-    cmd << "ffmpeg" 
+    cmd << "ffmpeg -y -s " << width << "x" << height
+        << " -framerate 30"
         << " -i output.h264"
         << " -c copy data_moshed.mp4";
     std::system(cmd.str().c_str());
